@@ -10,10 +10,10 @@ RUN sed -i -e '/Azure\ Kubernetes\ Service/,$d' /workspace/hack/build/seed/resou
 
 FROM brew.registry.redhat.io/rh-osbs/mta-mta-static-report-rhel9:8.0.0 as report
 
-FROM registry.redhat.io/ubi9-minimal:latest
+FROM registry.redhat.io/ubi9:latest
 # FIX ME : Need CI_VERSION
 #ARG VERSION=${CI_VERSION}
-RUN microdnf -y install openssl sqlite && microdnf -y clean all
+RUN dnf -y install openssl sqlite && dnf -y clean all
 RUN echo "hub:x:1001:0:hub:/:/sbin/nologin" >> /etc/passwd
 
 COPY --from=builder /workspace/bin/hub /usr/local/bin/mta-hub
