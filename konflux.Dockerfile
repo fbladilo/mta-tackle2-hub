@@ -17,8 +17,8 @@ RUN dnf -y install openssl sqlite && dnf -y clean all
 RUN echo "hub:x:1001:0:hub:/:/sbin/nologin" >> /etc/passwd
 
 COPY --from=builder /workspace/bin/hub /usr/local/bin/mta-hub
-COPY --from=builder /workspace/auth/roles.yaml /tmp/roles.yaml
-COPY --from=builder /workspace/auth/users.yaml /tmp/users.yaml
+COPY --from=builder /workspace/internal/auth/roles.yaml /tmp/roles.yaml
+COPY --from=builder /workspace/internal/auth/users.yaml /tmp/users.yaml
 COPY --from=builder /workspace/LICENSE /licenses/
 COPY --from=builder /workspace/hack/build/seed/resources/ /tmp/seed
 COPY --from=report  /usr/local/static-report /tmp/analysis/report
