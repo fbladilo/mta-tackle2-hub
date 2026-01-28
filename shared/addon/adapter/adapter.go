@@ -11,6 +11,7 @@ import (
 	logapi "github.com/go-logr/logr"
 	liberr "github.com/jortel/go-utils/error"
 	"github.com/jortel/go-utils/logr"
+	"github.com/konveyor/tackle2-hub/shared/api"
 	"github.com/konveyor/tackle2-hub/shared/binding"
 	"github.com/konveyor/tackle2-hub/shared/binding/application"
 	"github.com/konveyor/tackle2-hub/shared/binding/bucket"
@@ -34,7 +35,7 @@ func init() {
 }
 
 // Client
-type Client = binding.Client
+type RestClient = binding.RestClient
 type RichClient = binding.RichClient
 type Params = binding.Params
 type Param = binding.Param
@@ -152,43 +153,40 @@ func (h *Adapter) Run(addon func() error) {
 	}
 }
 
-// Client returns a configured rich-client.
-func (h *Adapter) Client() (client *RichClient) {
-	client = &RichClient{}
-	client.Client.Login = h.Task.richClient.Client.Login
-	client.Client.Retry = h.Task.richClient.Client.Retry
+// Use sets the richClient.
+func (h *Adapter) Use(richClient *RichClient) {
+	h.Log = Log
+	h.Wrap = Wrap
+	h.richClient = richClient
+	h.AnalysisProfile = richClient.AnalysisProfile
+	h.Application = richClient.Application
+	h.Archetype = richClient.Archetype
+	h.File = richClient.File
+	h.Generator = richClient.Generator
+	h.Identity = richClient.Identity
+	h.Manifest = richClient.Manifest
+	h.Platform = richClient.Platform
+	h.Proxy = richClient.Proxy
+	h.RuleSet = richClient.RuleSet
+	h.Schema = richClient.Schema
+	h.Setting = richClient.Setting
+	h.Tag = richClient.Tag
+	h.TagCategory = richClient.TagCategory
+	h.Target = richClient.Target
+}
+
+// Client returns the rich-client.
+func (h *Adapter) Client() (richClient *RichClient) {
+	richClient = h.richClient
 	return
 }
 
 // New builds a new Addon Adapter object.
 func New() (adapter *Adapter) {
 	richClient := binding.New(Settings.Hub.URL)
-	richClient.Client.Login.Token = Settings.Hub.Token
-	adapter = &Adapter{
-		Task: Task{
-			richClient: richClient,
-		},
-		Log:  Log,
-		Wrap: Wrap,
-		//
-		AnalysisProfile: richClient.AnalysisProfile,
-		Application:     richClient.Application,
-		Archetype:       richClient.Archetype,
-		File:            richClient.File,
-		Generator:       richClient.Generator,
-		Identity:        richClient.Identity,
-		Manifest:        richClient.Manifest,
-		Platform:        richClient.Platform,
-		Proxy:           richClient.Proxy,
-		RuleSet:         richClient.RuleSet,
-		Schema:          richClient.Schema,
-		Setting:         richClient.Setting,
-		Tag:             richClient.Tag,
-		TagCategory:     richClient.TagCategory,
-		Target:          richClient.Target,
-	}
-
+	richClient.Client.Use(api.Login{Token: Settings.Hub.Token})
+	adapter = &Adapter{}
+	adapter.Use(richClient)
 	Log.Info("Addon (adapter) created.")
-
 	return
 }
